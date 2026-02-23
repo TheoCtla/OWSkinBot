@@ -1,0 +1,20 @@
+{
+    "name": "ow_bot",
+    "version": "1.0.0",
+    "description": "Discord bot for Overwatch skins",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "start": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "discord.js": "^14.18.0",
+        "dotenv": "^16.5.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.15.0",
+        "tsx": "^4.19.0",
+        "typescript": "^5.8.0"
+    }
+}
