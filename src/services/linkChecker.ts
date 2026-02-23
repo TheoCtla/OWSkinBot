@@ -1,8 +1,8 @@
 import { getSkins, saveSkins } from '../utils/dataManager.js';
 import { Client, TextChannel } from 'discord.js';
 
-// 12 hours interval in milliseconds
-const CHECK_INTERVAL = 12 * 60 * 60 * 1000;
+// 24 hours interval in milliseconds
+const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -177,11 +177,8 @@ async function runLinkCheckCycle() {
  */
 export function startLinkChecker(client: Client) {
     discordClient = client;
-    console.log('[LinkChecker] Background service started. Links will be verified every 12 hours.');
+    console.log('[LinkChecker] Background service started. Links will be verified every 24 hours.');
 
-    // Initial run immediately after start
-    runLinkCheckCycle();
-
-    // Schedule subsequent runs
+    // Schedule runs every 24 hours (no immediate run at startup)
     setInterval(runLinkCheckCycle, CHECK_INTERVAL);
 }

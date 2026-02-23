@@ -60,14 +60,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
     }
 
+    const skinLines = activeSkins
+        .map((skin: any) => `[${skin.name}](${skin.url}) — ( ${skin.code} )`)
+        .join('\n');
+
     const embed = new EmbedBuilder()
-        .setTitle(`Skins disponibles pour ${heroKey.toUpperCase()}`)
-        .setColor('#F99E1A') // Overwatch Orange Color
-        .setDescription(
-            activeSkins.map((skin: any) => `> **[${skin.name}](${skin.url})** | \`${skin.code}\``).join('\n\n')
-        )
+        .setTitle(`Codes de skin actifs — ${heroKey}`)
+        .setColor('#F99E1A')
+        .setDescription(skinLines)
         .setFooter({ text: `${activeSkins.length} skin(s) actif(s) trouvé(s)` })
-        .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });
 }
