@@ -4,7 +4,17 @@ import {
     EmbedBuilder,
     AutocompleteInteraction
 } from 'discord.js';
-import { getSkins } from '../utils/dataManager.js';
+import db from '../api/config/db.js';
+import { HeroRepository } from '../api/repositories/HeroRepository.js';
+import { SkinRepository } from '../api/repositories/SkinRepository.js';
+import { HeroService } from '../api/services/HeroService.js';
+import { SkinService } from '../api/services/SkinService.js';
+
+// ── Dependency injection ──
+const heroService = new HeroService(new HeroRepository(db));
+const skinService = new SkinService(new SkinRepository(db));
+
+const BASE_URL = 'https://eu.battle.net/shop/en/checkout/buy';
 
 export const data = new SlashCommandBuilder()
     .setName('skin')
@@ -18,57 +28,51 @@ export const data = new SlashCommandBuilder()
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const db = await getSkins();
 
-    // Get all hero names
-    let heroes = Object.keys(db);
+    let heroes = await heroService.getAllHeroes();
 
-    // Filter matching heroes with what the user is typing
     if (focusedValue) {
-        heroes = heroes.filter(choice => choice.toLowerCase().includes(focusedValue));
+        heroes = heroes.filter(h => h.name.toLowerCase().includes(focusedValue));
     }
 
-    // Discord only allows up to 25 autocomplete choices
     const choices = heroes
         .slice(0, 25)
-        .map(hero => ({ name: hero, value: hero }));
+        .map(h => ({ name: h.name, value: h.name }));
 
     await interaction.respond(choices);
 }
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     const heroInput = interaction.options.getString('hero', true);
-    const db = await getSkins();
 
-    // Case-insensitive hero lookup
-    const heroKey = Object.keys(db).find(k => k.toLowerCase() === heroInput.toLowerCase());
-    const heroSkins = heroKey ? db[heroKey] : undefined;
+    const hero = await heroService.getHeroByName(heroInput);
 
-    if (!heroKey || !heroSkins || heroSkins.length === 0) {
+    if (!hero) {
         return interaction.reply({
             content: ` Aucun héros nommé "**${heroInput}**" n'a été trouvé dans la base de données.`,
-            flags: 64, // MessageFlags.Ephemeral
+            flags: 64,
         });
     }
 
-    const activeSkins = heroSkins.filter((skin: any) => skin.is_active);
+    const allSkins = await skinService.getAllSkins({ heroId: hero.id });
+    const activeSkins = allSkins.filter(s => s.is_active === 1);
 
     if (activeSkins.length === 0) {
         return interaction.reply({
-            content: `⚠️ Il n'y a actuellement aucun code de skin actif disponible pour **${heroKey}**.`,
-            flags: 64, // MessageFlags.Ephemeral
+            content: `⚠️ Il n'y a actuellement aucun code de skin actif disponible pour **${hero.name}**.`,
+            flags: 64,
         });
     }
 
     const skinLines = activeSkins
-        .map((skin: any) => `[${skin.name}](${skin.url}) — ( ${skin.code} )`)
+        .map(skin => `[${skin.name}](${BASE_URL}/${skin.code}) — ( ${skin.code} )`)
         .join('\n');
 
     const embed = new EmbedBuilder()
-        .setTitle(`Codes de skin actifs — ${heroKey}`)
+        .setTitle(`Codes de skin actifs — ${hero.name}`)
         .setColor('#F99E1A')
         .setDescription(skinLines)
-        .setFooter({ text: `${activeSkins.length} skin(s) actif(s) trouvé(s)` })
+        .setFooter({ text: `${activeSkins.length} skin(s) actif(s) trouvé(s)` });
 
     await interaction.reply({ embeds: [embed] });
 }

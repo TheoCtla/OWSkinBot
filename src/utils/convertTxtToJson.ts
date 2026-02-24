@@ -142,7 +142,7 @@ async function main() {
 
     // ── 6. Summary ──
     const heroes = Object.keys(db).sort();
-    console.log(`\n[Convert] ✅ Done!`);
+    console.log(`\n[Convert]  Done!`);
     console.log(`  Parsed: ${parsedCount} entries`);
     console.log(`  Skipped: ${skippedCount} lines`);
     console.log(`  Heroes: ${heroes.length}`);

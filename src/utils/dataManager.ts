@@ -52,7 +52,7 @@ export async function saveSkins(db: SkinDatabase): Promise<void> {
             throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
         }
 
-        console.log('✅ Base de données sauvegardée avec succès sur GitHub Gist !');
+        console.log(' Base de données sauvegardée avec succès sur GitHub Gist !');
     } catch (error) {
         console.error('Error saving skins data to Gist:', error);
     }
