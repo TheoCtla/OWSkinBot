@@ -1,8 +1,7 @@
 import { getSkins, saveSkins } from '../utils/dataManager.js';
 import { Client, TextChannel } from 'discord.js';
 
-// 24 hours interval in milliseconds
-const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -173,12 +172,22 @@ async function runLinkCheckCycle() {
 
 /**
  * Starts the background link checker task.
- * Runs immediately on start, then every 12 hours.
+ * Schedules the check to run every day at midnight (00:00).
  */
 export function startLinkChecker(client: Client) {
     discordClient = client;
-    console.log('[LinkChecker] Background service started. Links will be verified every 24 hours.');
 
-    // Schedule runs every 24 hours (no immediate run at startup)
-    setInterval(runLinkCheckCycle, CHECK_INTERVAL);
+    // Calculate ms until next midnight
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+    console.log(`[LinkChecker] Background service started. Prochain scrape à minuit (dans ${Math.round(msUntilMidnight / 60000)} min).`);
+
+    // First run at next midnight, then every 24h
+    setTimeout(() => {
+        runLinkCheckCycle();
+        setInterval(runLinkCheckCycle, ONE_DAY_MS);
+    }, msUntilMidnight);
 }
