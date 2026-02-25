@@ -51,7 +51,8 @@ export class SkinController {
             const skin = await this.skinService.createSkin({ id_hero, name, code, price });
             res.status(201).json(skin);
         } catch (error: any) {
-            if (error?.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            // Turso / LibSQL utilise "SQLITE_CONSTRAINT" comme code d'erreur pour les contraintes uniques
+            if (error?.code === 'SQLITE_CONSTRAINT' || error?.message?.includes('UNIQUE')) {
                 res.status(400).json({ error: `Skin with code '${req.body.code}' already exists` });
                 return;
             }
