@@ -90,6 +90,8 @@ async function sendNotification(message: string) {
 async function runLinkCheckCycle() {
     console.log('[LinkChecker] Cycle starting...');
 
+    try {
+
     // ── 1. Retrieve the Battle.net session cookie ──
     const bnetCookie = process.env.BNET_COOKIE;
     if (!bnetCookie) {
@@ -168,6 +170,10 @@ async function runLinkCheckCycle() {
     } else {
         console.log(`[LinkChecker]  Cycle terminé. Aucune modification.`);
     }
+
+    } catch (error) {
+        console.error('[LinkChecker] ❌ Cycle failed with error:', error);
+    }
 }
 
 /**
@@ -185,7 +191,9 @@ export function startLinkChecker(client: Client) {
     console.log(`[LinkChecker] Background service started. Prochain scrape à minuit (dans ${Math.round(msUntilMidnight / 60000)} min).`);
 
     setTimeout(() => {
-        runLinkCheckCycle();
-        setInterval(runLinkCheckCycle, ONE_DAY_MS);
+        runLinkCheckCycle().catch(err => console.error('[LinkChecker] Cycle error:', err));
+        setInterval(() => {
+            runLinkCheckCycle().catch(err => console.error('[LinkChecker] Cycle error:', err));
+        }, ONE_DAY_MS);
     }, msUntilMidnight);
 }

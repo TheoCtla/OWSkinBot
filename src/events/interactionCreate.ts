@@ -16,10 +16,14 @@ export async function execute(interaction: Interaction) {
                     flags: 64, // MessageFlags.Ephemeral
                 };
 
-                if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp(errorMessage);
-                } else {
-                    await interaction.reply(errorMessage);
+                try {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp(errorMessage);
+                    } else {
+                        await interaction.reply(errorMessage);
+                    }
+                } catch (replyError) {
+                    console.error('Error sending error response:', replyError);
                 }
             }
         }

@@ -32,6 +32,9 @@ const skinController = new SkinController(skinService);
 const app = express();
 app.use(express.json());
 
+// ── Health check (no DB dependency — fast response for Render wake-up) ──
+app.get('/health', (_req, res) => res.status(200).send('OK'));
+
 // ── Routes ──
 app.get('/', (_req, res) => res.send('OW Skin Bot API is alive!'));
 app.use('/api/heroes', createHeroRoutes(heroController));
